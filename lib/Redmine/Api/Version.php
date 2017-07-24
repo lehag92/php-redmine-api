@@ -148,12 +148,28 @@ class Version extends AbstractApi
         $this->validateStatus($params);
         $this->validateSharing($params);
 
-        $xml = new \SimpleXMLElement('<?xml version="1.0"?><version></version>');
-        foreach ($params as $k => $v) {
-            $xml->addChild($k, $v);
-        }
+        $xml = $xml = $this->prepareParamsXml($params);
 
         return $this->put('/versions/'.$id.'.xml', $xml->asXML());
+    }
+
+    /**
+     * @param array $params
+     *
+     * @return \SimpleXMLElement
+     */
+    protected function prepareParamsXml($params)
+    {
+        $xml = new \SimpleXMLElement('<?xml version="1.0"?><version></version>');
+        foreach ($params as $k => $v) {
+            if ('custom_fields' === $k && is_array($v)) {
+                $this->attachCustomFieldXML($xml, $v);
+            } else {
+                $xml->addChild($k, $v);
+            }
+        }
+
+        return $xml;
     }
 
     private function validateStatus(array $params = [])
